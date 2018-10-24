@@ -19,6 +19,11 @@
         <a id="link" href="#">Run Ajax</a>
     </p>
 
+    <h2>Proxy v2</h2>
+    <p>
+        <a id="proxy" href="#">Run proxy</a>
+    </p>
+
     <h2>Cookies</h2>
     <p>
         <a id="cookieCreate" href="#">Create cookie</a> |

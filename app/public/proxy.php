@@ -2,7 +2,7 @@
 $salonId =  $_GET['salonId'];
 $endpoint =  $_GET['method'];
 
-$json = json_decode(file_get_contents('salons.json'));
+$json = json_decode(file_get_contents('../../../salons.json'));
 $token = "";
 
 foreach($json->Salons as $item) {
