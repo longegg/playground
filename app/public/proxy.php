@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 $requestType = $_SERVER['REQUEST_METHOD'];
 $endpoint =  $_GET['method'];
 $salonId = $_GET['salonId'];
@@ -8,10 +10,40 @@ $payload = trim(file_get_contents("php://input"));
 $isPost = $requestType == "POST";
 // $isGet = $requestType == "GET";
 $querystring = stripQueryParams($_SERVER['QUERY_STRING']);
+$sessionCustomerId = "customerId";
 
 $token = findAPIKey($salonId);
 $response = forward($url, $endpoint, $payload, $token, $isPost, $querystring);
-echo $response; 
+
+if ($endpoint == "customer/search") {
+    $customerId = findCustomerId($response);
+    createSession($customerId, $sessionCustomerId);
+}
+
+if ($endpoint == "customer/isAuthenticated") {
+    echo retriveSession($sessionCustomerId);
+    return;
+}
+
+echo $response;
+
+function retriveSession($name) {
+    if (isset($_SESSION[$name])) {
+        return $_SESSION[$name];
+    }
+    return null;
+}
+
+function createSession($customerId, $name) {
+    if (!isset($_SESSION[$name])) {
+        $_SESSION[$name] = $customerId;
+    } 
+}
+
+function findCustomerId($response) {
+    $decoded = json_decode($response);
+    return $decoded->Id;
+}
 
 function stripQueryParams($querystring) {
     if ($querystring = "") {

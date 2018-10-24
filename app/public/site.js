@@ -9,7 +9,11 @@
 
     $("#proxy").click(function(){ 
         runProxy(); 
-    });    
+    }); 
+    
+    $("#isAuth").click(function(){ 
+        getSession(); 
+    });     
 
     $("#cookieCreate").click(function(){
         var cookieValue = "Cookie-" + Date.now();
@@ -42,14 +46,14 @@
 
     function runProxy() {
 
-var data = {
-    Field: "Email",
-    Value: "oyverik@gmail.com",
-    Password: "2sCd"    
-};
+        var data = {
+            Field: "Email",
+            Value: "oyverik@gmail.com",
+            Password: "2sCd"    
+        };
 
         $.ajax({
-            url: "proxy3.php?method=customer%2Fsearch",
+            url: "proxy.php?method=customer%2Fsearch&salonId=1",
             type: "POST",
             data: JSON.stringify(data),
             contentType: "application/json; charset=utf-8",
@@ -58,6 +62,16 @@ var data = {
                 console.log(result);
             }
         });
-    }    
+    } 
+    
+    function getSession() {
+        $.ajax({
+            url: "proxy.php?method=customer%2FisAuthenticated&salonId=1",
+            type: "GET",
+            success: function(result){
+                console.log(result);
+            }
+        });
+    }     
 
 })(jQuery);

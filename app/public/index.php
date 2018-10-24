@@ -21,7 +21,8 @@
 
     <h2>Proxy v2</h2>
     <p>
-        <a id="proxy" href="#">Run proxy</a>
+        <a id="proxy" href="#">Log in</a>
+        <a href="#" id="isAuth">Get Session</a>
     </p>
 
     <h2>Cookies</h2>
