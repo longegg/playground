@@ -28,8 +28,13 @@ if (!$customerIsLoggingIn) {
 }
 
 if ($endpoint == "isAuthenticated") {
-    echo isAuthenticated($sessionName)  == null ? "false" : "true";
-    return;
+    if (isAuthenticated($sessionName)) {
+        http_response_code(204);
+    } else {
+        http_response_code(401);  
+    }
+    
+     return;
 }
 
 if (endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn)) {
