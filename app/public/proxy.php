@@ -2,11 +2,7 @@
 
 session_start();
 
-$sessionTimeout = 10;
-
-updateSessionActivity(20);
-resetSessionId($sessionTimeout);
-
+$sessionTimeout = 5;
 $requestType = $_SERVER['REQUEST_METHOD'];
 $endpoint =  $_GET['method'];
 $salonId = $_GET['salonId'];
@@ -14,34 +10,49 @@ $url = "https://booking.raise.no/api/v2/";
 $payload = trim(file_get_contents("php://input"));
 $isPost = $requestType == "POST";
 $querystring = stripQueryParams($_SERVER['QUERY_STRING']);
-$sessionCustomerId = "customerId";
-$lockedEndpoints = array("locked", "customer/2180057/activities");
+$sessionName = "customerId";
+$lockedEndpoints = array("customer", "activity");
+$customerIsLoggingIn = $endpoint == "customer/search";
 
-if (endpointIsLocked($endpoint, $lockedEndpoints)) {
-    if (!isAuthenticated($sessionCustomerId)) {
+if (!$customerIsLoggingIn) {
+    updateSessionActivity(10);
+    resetSessionId($sessionTimeout);
+}
+
+if ($endpoint == "customer/isAuthenticated") {
+    echo isAuthenticated($sessionName)  == null ? "false" : "true";
+    return;
+}
+
+if (endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn)) {
+    if (!isAuthenticated($sessionName)) {
         echo "You are not logged in";
         return;
     }
 }
 
-if ($endpoint == "customer/isAuthenticated") {
-    echo isAuthenticated($sessionCustomerId)  == null ? "false" : "true";
-    return;
-}
-
 $token = findAPIKey($salonId);
+$response = forwardRequest($url, $endpoint, $payload, $token, $isPost, $querystring);
 
-$response = forward($url, $endpoint, $payload, $token, $isPost, $querystring);
-
-if ($endpoint == "customer/search") {
+if ($customerIsLoggingIn) {
     $customerId = findCustomerId($response);
-    createSession($customerId, $sessionCustomerId);
+    createSession($customerId, $sessionName);
 }
 
 echo $response;
 
-function endpointIsLocked($endpoint, $lockedEndpoints) {
-    return (in_array($endpoint, $lockedEndpoints));
+function endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn) {
+    if ($customerIsLoggingIn) {
+        return false;
+    }
+
+    foreach ($lockedEndpoints as $e) {
+        $search_length = strlen($e);
+        if (substr($endpoint, 0, $search_length) == $e) {
+            return true;
+        }       
+    }
+    return false;
 }
 
 function updateSessionActivity ($timeout) {
@@ -65,7 +76,7 @@ function resetSessionId($timeout) {
 
 function retriveSession($sessionName) {
     if (isset($_SESSION[$sessionName])) {
-        return session_id(); //$_SESSION[$sessionName];
+        return $_SESSION[$sessionName]; //session_id();
     }
     return null;
 }
@@ -106,7 +117,7 @@ function findAPIKey($salonId) {
     }
 }
 
-function forward($url, $endpoint, $payload, $token, $isPost, $params) {
+function forwardRequest($url, $endpoint, $payload, $token, $isPost, $params) {
     $authorization = "Authorization: Bearer " . $token;
     $redirect_url = $url . $endpoint;
     
