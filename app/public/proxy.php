@@ -2,7 +2,8 @@
 
 session_start();
 
-$sessionTimeout = 5;
+$sessionTimeout = 1440;
+$sessionIdResetTimout = 600;
 $requestType = $_SERVER['REQUEST_METHOD'];
 $endpoint =  $_GET['method'];
 $salonId = $_GET['salonId'];
@@ -13,20 +14,27 @@ $querystring = stripQueryParams($_SERVER['QUERY_STRING']);
 $sessionName = "customerId";
 $lockedEndpoints = array("customer", "activity");
 $customerIsLoggingIn = $endpoint == "customer/search";
+$customerIsLoggingOut = $endpoint == "logout";
+
+if ($customerIsLoggingOut) {
+    destroySession();
+    http_response_code(204);
+    return;
+}
 
 if (!$customerIsLoggingIn) {
-    updateSessionActivity(10);
+    updateSessionActivity($sessionIdResetTimout);
     resetSessionId($sessionTimeout);
 }
 
-if ($endpoint == "customer/isAuthenticated") {
+if ($endpoint == "isAuthenticated") {
     echo isAuthenticated($sessionName)  == null ? "false" : "true";
     return;
 }
 
 if (endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn)) {
     if (!isAuthenticated($sessionName)) {
-        echo "You are not logged in";
+        http_response_code(401);  
         return;
     }
 }
@@ -40,6 +48,27 @@ if ($customerIsLoggingIn) {
 }
 
 echo $response;
+
+function json_response($message = null, $code = 200) {
+    header_remove();
+    http_response_code($code);
+    header("Cache-Control: no-transform,public,max-age=300,s-maxage=900"); // Forces cache
+    header('Content-Type: application/json');
+
+    $status = array(
+        200 => '200 OK',
+        400 => '400 Bad Request',
+        422 => 'Unprocessable Entity',
+        500 => '500 Internal Server Error'
+    );
+
+    header('Status: '. $status[$code]);
+
+    return json_encode(array(
+        'status' => $code < 300, // success or not?
+        'message' => $message
+    ));
+}
 
 function endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn) {
     if ($customerIsLoggingIn) {
@@ -58,10 +87,14 @@ function endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn) {
 function updateSessionActivity ($timeout) {
     if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $timeout)) {
         // Last request was more than n minutes ago.
-        session_unset();
-        session_destroy();
+        destroySession();
     }
     $_SESSION['LAST_ACTIVITY'] = time();
+}
+
+function destroySession() {
+    session_unset();
+    session_destroy();
 }
 
 function resetSessionId($timeout) {
