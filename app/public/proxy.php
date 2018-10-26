@@ -7,6 +7,8 @@ $sessionIdResetTimout = 600;
 $requestType = $_SERVER['REQUEST_METHOD'];
 $endpoint =  $_GET['method'];
 $salonId = $_GET['salonId'];
+$customerId = isset($_GET['customerId']) ? $_GET['customerId'] : null;
+
 $url = "https://booking.raise.no/api/v2/";
 $payload = trim(file_get_contents("php://input"));
 $isPost = $requestType == "POST";
@@ -28,17 +30,17 @@ if (!$customerIsLoggingIn) {
 }
 
 if ($endpoint == "isAuthenticated") {
-    if (isAuthenticated($sessionName)) {
+    if (isAuthenticated($sessionName, $customerId)) {
         http_response_code(204);
     } else {
-        http_response_code(401);  
+        http_response_code(401);
     }
     
      return;
 }
 
 if (endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn)) {
-    if (!isAuthenticated($sessionName)) {
+    if (!isAuthenticated($sessionName, $customerId)) {
         http_response_code(401);  
         return;
     }
@@ -119,8 +121,17 @@ function retriveSession($sessionName) {
     return null;
 }
 
-function isAuthenticated($sessionName) {
-    return retriveSession($sessionName) != null;
+function isAuthenticated($sessionName, $customerId) {
+    $customerIdSession = retriveSession($sessionName);
+    if ($customerIdSession == null) {
+        return false;
+    }
+
+    if ($customerIdSession == $customerId) {
+        return true;
+    }
+
+    return false;
 }
 
 function createSession($customerId, $sessionName) {
