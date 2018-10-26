@@ -8,7 +8,6 @@ $requestType = $_SERVER['REQUEST_METHOD'];
 $endpoint =  $_GET['method'];
 $salonId = $_GET['salonId'];
 $customerId = isset($_GET['customerId']) ? $_GET['customerId'] : null;
-
 $url = "https://booking.raise.no/api/v2/";
 $payload = trim(file_get_contents("php://input"));
 $isPost = $requestType == "POST";
