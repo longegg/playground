@@ -146,9 +146,10 @@ function findCustomerId($response) {
 }
 
 function stripQueryParams($querystring) {
-    if ($querystring = "") {
+    if (!isset($querystring) || trim($querystring) === '') {
         return;
     }
+
     parse_str($querystring, $ar);
     unset($ar["method"]);
     unset($ar["salonId"]);
