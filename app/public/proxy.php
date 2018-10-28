@@ -152,6 +152,7 @@ function stripQueryParams($querystring) {
     parse_str($querystring, $ar);
     unset($ar["method"]);
     unset($ar["salonId"]);
+    unset($ar["customerId"]);
     return http_build_query($ar);
 }
 
@@ -169,6 +170,8 @@ function findAPIKey($salonId) {
 function forwardRequest($url, $endpoint, $payload, $token, $isPost, $params) {
     $authorization = "Authorization: Bearer " . $token;
     $redirect_url = $url . $endpoint;
+
+ 
     
     $options = array(
         CURLOPT_RETURNTRANSFER => true,
@@ -185,7 +188,7 @@ function forwardRequest($url, $endpoint, $payload, $token, $isPost, $params) {
     }
 
     $redirect_url = $redirect_url . "?" . $params;
-
+    
     $ch = curl_init($redirect_url);
     curl_setopt_array($ch, $options);
     $response = curl_exec($ch);
