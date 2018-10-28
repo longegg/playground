@@ -3,3 +3,4 @@
 !/conf/nginx/nginx.conf
 !/conf/nginx/site.conf
 *.json
+**/app/sql/
