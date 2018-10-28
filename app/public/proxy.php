@@ -16,6 +16,8 @@ $sessionName = "customerId";
 $lockedEndpoints = array("customer", "activity");
 $customerIsLoggingIn = $endpoint == "customer/search";
 $customerIsLoggingOut = $endpoint == "logout";
+$addingCustomer = $endpoint == "customer" && $isPost;
+$customerActionIsPermittable = $customerIsLoggingIn || $addingCustomer;
 
 if ($customerIsLoggingOut) {
     destroySession();
@@ -38,7 +40,7 @@ if ($endpoint == "isAuthenticated") {
      return;
 }
 
-if (endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn)) {
+if (endpointIsLocked($endpoint, $lockedEndpoints) && !$customerActionIsPermittable) {
     if (!isAuthenticated($sessionName, $customerId)) {
         http_response_code(401);  
         return;
@@ -76,11 +78,7 @@ function json_response($message = null, $code = 200) {
     ));
 }
 
-function endpointIsLocked($endpoint, $lockedEndpoints, $customerIsLoggingIn) {
-    if ($customerIsLoggingIn) {
-        return false;
-    }
-
+function endpointIsLocked($endpoint, $lockedEndpoints) {
     foreach ($lockedEndpoints as $e) {
         $search_length = strlen($e);
         if (substr($endpoint, 0, $search_length) == $e) {
@@ -188,7 +186,7 @@ function forwardRequest($url, $endpoint, $payload, $token, $isPost, $params) {
     }
 
     $redirect_url = $redirect_url . "?" . $params;
-    
+
     $ch = curl_init($redirect_url);
     curl_setopt_array($ch, $options);
     $response = curl_exec($ch);
