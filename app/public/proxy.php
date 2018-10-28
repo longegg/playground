@@ -168,8 +168,6 @@ function findAPIKey($salonId) {
 function forwardRequest($url, $endpoint, $payload, $token, $isPost, $params) {
     $authorization = "Authorization: Bearer " . $token;
     $redirect_url = $url . $endpoint;
-
- 
     
     $options = array(
         CURLOPT_RETURNTRANSFER => true,
