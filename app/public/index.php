@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    <h1>PHP Playground</h1>
+    <h1>Proxy v1</h1>
 
     <h2>Ajax</h2>
     <p>
