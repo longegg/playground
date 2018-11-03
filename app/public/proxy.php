@@ -4,13 +4,14 @@ session_start();
 
 $sessionTimeout = 1440;
 $sessionIdResetTimout = 600;
-$requestType = $_SERVER['REQUEST_METHOD'];
+$requestMethod = $_SERVER['REQUEST_METHOD'];
 $endpoint =  $_GET['method'];
 $salonId = $_GET['salonId'];
 $customerId = isset($_GET['customerId']) ? $_GET['customerId'] : null;
 $url = "https://booking.raise.no/api/v2/";
 $payload = trim(file_get_contents("php://input"));
-$isPost = $requestType == "POST";
+$requestType = getRequestType($requestMethod);
+$isPost = $requestType == RequestType::POST;
 $querystring = stripQueryParams($_SERVER['QUERY_STRING']);
 $sessionName = "customerId";
 $lockedEndpoints = array("customer", "activity");
@@ -193,6 +194,34 @@ function forwardRequest($url, $endpoint, $payload, $token, $isPost, $params) {
         return null;
     }
     return $response;
+}
+
+function getRequestType($requestMethod) {
+    $requestType = RequestType::GET;
+
+    switch ($requestMethod) {
+        case "GET":
+            $requestType = RequestType::GET;
+            break;
+        case "POST":
+            $requestType = RequestType::POST;
+            break;
+        case "PUT":
+            $requestType = RequestType::PUT;
+            break;
+        case "DELETE":
+            $requestType = RequestType::DELETE;
+            break;                                    
+    }
+
+    return $requestType;
+}
+
+abstract class RequestType {
+    const GET = "GET";
+    const POST = "POST";
+    const PUT = "PUT";
+    const DELETE = "DELETE";
 }
 
 ?>
