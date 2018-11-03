@@ -17,7 +17,7 @@ $sessionName = "customerId";
 $lockedEndpoints = array("customer", "activity");
 $customerIsLoggingIn = $endpoint == "customer/search";
 $customerIsLoggingOut = $endpoint == "logout";
-$addingCustomer = $endpoint == "customer" && $isPost;
+$addingCustomer = $endpoint == "customer" && ($requestType == RequestType::POST || $requestType == RequestType::PUT);
 $customerActionIsPermittable = $customerIsLoggingIn || $addingCustomer;
 
 if ($customerIsLoggingOut) {
@@ -49,7 +49,7 @@ if (endpointIsLocked($endpoint, $lockedEndpoints) && !$customerActionIsPermittab
 }
 
 $token = findAPIKey($salonId);
-$response = forwardRequest($url, $endpoint, $payload, $token, $isPost, $querystring);
+$response = forwardRequest($url, $endpoint, $payload, $token, $requestType, $querystring);
 
 if ($customerIsLoggingIn) {
     $customerId = findCustomerId($response);
@@ -166,7 +166,7 @@ function findAPIKey($salonId) {
     }
 }
 
-function forwardRequest($url, $endpoint, $payload, $token, $isPost, $params) {
+function forwardRequest($url, $endpoint, $payload, $token, $requestType, $params) {
     $authorization = "Authorization: Bearer " . $token;
     $redirect_url = $url . $endpoint;
     
@@ -174,14 +174,11 @@ function forwardRequest($url, $endpoint, $payload, $token, $isPost, $params) {
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER => array('Content-Type: application/json' , $authorization )
     );
-
-    if ($isPost) {
-        $options[CURLOPT_POST] = true;
-    }
+    
+    $options[CURLOPT_CUSTOMREQUEST] = $requestType;
 
     if ($payload != "") {
         $options[CURLOPT_POSTFIELDS] = $payload;
-        $options[CURLOPT_POST] = true;
     }
 
     $redirect_url = $redirect_url . "?" . $params;
