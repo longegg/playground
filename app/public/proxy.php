@@ -220,5 +220,3 @@ abstract class RequestType {
     const PUT = "PUT";
     const DELETE = "DELETE";
 }
-
-?>
