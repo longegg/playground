@@ -144,9 +144,9 @@ function isAuthenticated($sessionName, $customerId) {
 }
 
 function createSession($customerId, $sessionName) {
-    if (!isset($_SESSION[$sessionName])) {
-        $_SESSION[$sessionName] = $customerId;
-    } 
+    $_SESSION[$sessionName] = $customerId;
+    $_SESSION['CREATED'] = time();
+    $_SESSION['LAST_ACTIVITY'] = time();
 }
 
 function findCustomerId($response) {
