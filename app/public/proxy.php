@@ -34,8 +34,8 @@ if ($customerIsLoggingOut) {
 }
 
 if (!$customerIsLoggingIn) {
-    updateSessionActivity($sessionIdResetTimout);
-    resetSessionId($sessionTimeout);
+    updateSessionActivity($sessionTimeout);
+    resetSessionId($sessionIdResetTimout);
 }
 
 if ($endpoint == "isAuthenticated") {
