@@ -1,4 +1,11 @@
 <?php
+/** 
+ * PHP Proxy script for the Raise applications
+ * 
+ * This is a solution to access the Hano API on a different domain. The script 
+ * acts as a proxy service. A web application / client sends a request which is 
+ * then forwarded by the server to this script. Authorization is implemented.
+*/
 
 session_start();
 
