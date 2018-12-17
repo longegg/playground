@@ -88,11 +88,15 @@ function json_response($message = null, $code = 200) {
 
 function endpointIsLocked($endpoint, $lockedEndpoints) {
     foreach ($lockedEndpoints as $e) {
-        $search_length = strlen($e);
-        if (substr($endpoint, 0, $search_length) == $e) {
+
+        $firstSlashPos = strpos($endpoint, "/");
+        $endpointBeforeSlash = substr($endpoint, 0, $firstSlashPos);
+
+        if ($endpointBeforeSlash == $e) {
             return true;
-        }       
+        }
     }
+
     return false;
 }
 
