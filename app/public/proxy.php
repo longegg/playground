@@ -22,10 +22,11 @@ $isPost = $requestType == RequestType::POST;
 $querystring = stripQueryParams($_SERVER['QUERY_STRING']);
 $sessionName = "customerId";
 $lockedEndpoints = array("customer", "activity");
-$customerIsLoggingIn = $endpoint == "customer/search";
-$customerIsLoggingOut = $endpoint == "logout";
-$addingCustomer = $endpoint == "customer" && ($requestType == RequestType::POST || $requestType == RequestType::PUT);
-$customerActionIsPermittable = $customerIsLoggingIn || $addingCustomer;
+$customerIsLoggingIn = strtolower($endpoint) == "customer/search";
+$customerIsLoggingOut = strtolower($endpoint) == "logout";
+$customerIsRequestingPassword = strtolower($endpoint) == "customer/sendpasswordreminder";
+$addingCustomer = strtolower($endpoint) == "customer" && ($requestType == RequestType::POST || $requestType == RequestType::PUT);
+$customerActionIsPermittable = $customerIsLoggingIn || $addingCustomer || $customerIsRequestingPassword;
 
 if ($customerIsLoggingOut) {
     destroySession();
